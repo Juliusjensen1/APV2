@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8" />
+  <title>APV Spørgeskema</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h2 { margin-top: 30px; }
+    label { display: block; margin-top: 10px; }
+    .question { margin-bottom: 20px; }
+    .scale { display: flex; justify-content: space-between; margin-top: 5px; }
+    .scale label { display: flex; flex-direction: column; align-items: center; font-size: 10px; }
+    select, textarea { width: 100%; margin-top: 5px; }
+    button { margin-top: 20px; padding: 10px 20px; }
+  </style>
+</head>
+<body>
+  <h1>APV Spørgeskema</h1>
+
+  <label for="underafdeling">Underafdeling:</label>
+  <select id="underafdeling" required>
+    <option value="">-- Vælg --</option>
+    <option value="Køkken">Køkken</option>
+    <option value="Restaurant">Restaurant</option>
+  </select>
+
+<label for="afdeling">Afdeling:</label>
+  <select id="afdeling" required>
+    <option value="">-- Vælg --</option>
+    <option value="Dalle Valle Herlev">Dalle Valle Herlev</option>
+    <option value="Cyprus Fields">Cyprus Fields</option>
+    <option value="Dalle Valle Axeltorv">Dalle Valle Axeltorv</option>
+    <option value="Dalle Valle Fields">Dalle Valle Fields</option>
+    <option value="Dalle Valle Odense">Dalle Valle Odense</option>
+    <option value="Cafe A Hvidovre">Cafe A Hvidovre</option>
+    <option value="Cafe A Odense">Cafe A Odense</option>
+    <option value="Cyprus Fisketorvet">Cyprus Fisketorvet</option>
+    <option value="Cafe A Kolding">Cafe A Kolding</option>
+    <option value="Cafe A Ordrup">Cafe A Ordrup</option>
+    <option value="Cafe A Roskilde">Cafe A Roskilde</option>
+    <option value="And Kebab Fisketorvet">And Kebab Fisketorvet</option>
+    <option value="Cafe A Ballerup">Cafe A Ballerup</option>
+    <option value="Cafe A Herlev">Cafe A Herlev</option>
+    <option value="Cafe A Solrød">Cafe A Solrød</option>
+  </select>
+
+  <div id="question-container"></div>
+
+  <label for="kommentar">Evt. kommentar:</label>
+  <textarea id="kommentar" rows="4"></textarea>
+
+  <button onclick="sendSvar()">Send svar</button>
+
+  <script>
+    const spørgsmål = {
+      "OPLÆRING, INSTRUKTION OG LEDELSE": [
+        "Føler du dig tilstrækkeligt oplært i dine arbejdsopgaver?",
+        "Hvor synlig oplever du din nærmeste leder i hverdagen?",
+        "Hvor godt føler du dig informeret om virksomhedens sikkerhedsprocedurer?"
+      ],
+      "RISIKO FOR ULYKKER": [
+        "Hvor ofte oplever du glatte eller usikre gulve?",
+        "Hvor ryddeligt og overskueligt oplever du arbejdsområdet generelt?"
+      ],
+      "ARBEJDSMILJØ & ARBEJDSPRES": [
+        "Hvor ofte føler du dig tidspresset i dine opgaver?",
+        "Hvor let er det for dig at få hjælp, hvis du har brug for det?",
+        "Hvor klart og overskueligt er det for dig, hvilke opgaver du skal løse?",
+        "Hvor stor indflydelse føler du, at du har på dine opgaver og arbejdsgange?",
+        "Hvor støttende oplever du din nærmeste leder?",
+        "Hvor let er det for dig at få hjælp og støtte fra dine kolleger?",
+        "Hvor godt samarbejder du med dine kolleger i det daglige?"
+      ],
+      "TRIVSEL & PSYKISK ARBEJDSMILJØ": [
+        "Hvor ofte oplever du konflikter eller krænkende adfærd fra gæster?",
+        "Hvor tryg føler du dig i forhold til mobning eller seksuel chikane på arbejdspladsen?",
+        "Føler du dig godt tilpas på arbejdspladsen?"
+      ],
+      "SYGEFRAVÆR & HELBRED": [
+        "Hvor ofte går du på arbejde, selvom du føler dig syg eller skidt tilpas?"
+      ],
+      "INDEKLIMA & FYSISKE FORHOLD": [
+        "Hvor ofte oplever du, at der er for koldt på din arbejdsplads?",
+        "Hvor ofte oplever du træk i arbejdsområdet?",
+        "Hvor tilfreds er du med belysningen i dit arbejdsområde?",
+        "Hvor tilfreds er du med støjniveauet på arbejdspladsen?",
+        "Hvor ofte oplever du generende støv eller snavs i arbejdsområdet?",
+        "Føler du at du har tør eller irriterende hud på arbejdet?"
+      ]
+    };
+
+    const container = document.getElementById("question-container");
+
+    for (const kategori in spørgsmål) {
+      const h2 = document.createElement("h2");
+      h2.textContent = kategori;
+      container.appendChild(h2);
+
+      spørgsmål[kategori].forEach(spm => {
+        const div = document.createElement("div");
+        div.className = "question";
+        div.innerHTML = `<label>${spm}</label><div class="scale">` +
+          Array.from({ length: 10 }, (_, i) =>
+            `<label><input type="radio" name="${spm}" value="${i + 1}" required> ${i + 1}<br>${i === 0 ? 'Virkelig dårlig' : (i === 9 ? 'Fantastisk' : '')}</label>`
+          ).join("") + `</div>`;
+        container.appendChild(div);
+      });
+    }
+
+    function sendSvar() {
+      const afdeling = document.getElementById("afdeling").value;
+      const underafdeling = document.getElementById("underafdeling").value;
+      const kommentar = document.getElementById("kommentar").value;
+      const inputs = document.querySelectorAll("input[type=radio]:checked");
+
+      if (!afdeling || !underafdeling || inputs.length === 0) {
+        alert("Udfyld alle felter og svar på alle spørgsmål.");
+        return;
+      }
+
+      const svar = {};
+      inputs.forEach(input => {
+        svar[input.name] = input.value;
+      });
+
+      fetch("https://script.google.com/macros/s/1lHGLTULUmgI9ouiGeDbufVlYnxE09otaH650vwwEQLM/exec", {
+        method: "POST",
+        body: JSON.stringify({
+          afdeling,
+          underafdeling,
+          kommentar,
+          svar
+        }),
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }).then(res => res.json()).then(data => {
+        if (data.result === "success") {
+          alert("Tak for dine svar!");
+          window.location.reload();
+        } else {
+          alert("Der opstod en fejl: " + data.message);
+        }
+      }).catch(err => {
+        alert("Der opstod en netværksfejl: " + err);
+      });
+    }
+  </script>
+</body>
+</html>
